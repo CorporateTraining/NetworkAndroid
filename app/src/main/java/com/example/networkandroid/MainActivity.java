@@ -26,41 +26,49 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         networkButton = findViewById(R.id.network_activity);
         networkButton.setOnClickListener((view -> {
-            String url = "https://twc-android-bootcamp.github.io/fake-data/data/default.json";
-            Observable<String> objectObservable = Observable.create(item -> {
-                OkHttpClient okHttpClient = new OkHttpClient();
-                Request request = new Request
-                        .Builder()
-                        .url(url)
-                        .build();
-                Response response = okHttpClient.newCall(request)
-                        .execute();
-                String data = response.body().string();
-                item.onNext(data);
-                item.onComplete();
-            });
-            objectObservable
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Observer<String>() {
-                        @Override
-                        public void onSubscribe(Disposable d) {
-                        }
-
-                        @Override
-                        public void onNext(String s) {
-                            Toast.makeText(getApplicationContext(), s, Toast.LENGTH_SHORT).show();
-                        }
-
-                        @Override
-                        public void onError(Throwable e) {
-                            Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
-                        }
-
-                        @Override
-                        public void onComplete() {
-                        }
-                    });
+            Observable<String> objectObservable = getStringObservable();
+            showUserInfo(objectObservable);
         }));
+    }
+
+    private void showUserInfo(Observable<String> objectObservable) {
+        objectObservable
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<String>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                    }
+
+                    @Override
+                    public void onNext(String s) {
+                        Toast.makeText(getApplicationContext(), s, Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                    }
+                });
+    }
+
+    private Observable<String> getStringObservable() {
+        String url = "https://twc-android-bootcamp.github.io/fake-data/data/default.json";
+        return Observable.create(item -> {
+            OkHttpClient okHttpClient = new OkHttpClient();
+            Request request = new Request
+                    .Builder()
+                    .url(url)
+                    .build();
+            Response response = okHttpClient.newCall(request)
+                    .execute();
+            String data = response.body().string();
+            item.onNext(data);
+            item.onComplete();
+        });
     }
 }
