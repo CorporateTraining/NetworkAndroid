@@ -6,6 +6,9 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.example.networkandroid.entity.Wrapper;
+import com.google.gson.Gson;
+
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.Scheduler;
@@ -26,41 +29,53 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         networkButton = findViewById(R.id.network_activity);
         networkButton.setOnClickListener((view -> {
-            String url = "https://twc-android-bootcamp.github.io/fake-data/data/default.json";
-            Observable<String> objectObservable = Observable.create(item -> {
-                OkHttpClient okHttpClient = new OkHttpClient();
-                Request request = new Request
-                        .Builder()
-                        .url(url)
-                        .build();
-                Response response = okHttpClient.newCall(request)
-                        .execute();
-                String data = response.body().string();
-                item.onNext(data);
-                item.onComplete();
-            });
-            objectObservable
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Observer<String>() {
-                        @Override
-                        public void onSubscribe(Disposable d) {
-                        }
-
-                        @Override
-                        public void onNext(String s) {
-                            Toast.makeText(getApplicationContext(), s, Toast.LENGTH_SHORT).show();
-                        }
-
-                        @Override
-                        public void onError(Throwable e) {
-                            Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
-                        }
-
-                        @Override
-                        public void onComplete() {
-                        }
-                    });
+            Observable<Wrapper> objectObservable = getWrapperObservable();
+            showUserInfo(objectObservable);
         }));
+    }
+
+    private void showUserInfo(Observable<Wrapper> objectObservable) {
+        objectObservable
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<Wrapper>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                    }
+
+                    @Override
+                    public void onNext(Wrapper wrapper) {
+                        if (wrapper.getData().size() > 0) {
+                            Toast.makeText(getApplicationContext(), wrapper.getData().get(0).getName(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                    }
+                });
+    }
+
+    private Observable<Wrapper> getWrapperObservable() {
+        String url = "https://twc-android-bootcamp.github.io/fake-data/data/default.json";
+        return Observable.create(item -> {
+            OkHttpClient okHttpClient = new OkHttpClient();
+            Request request = new Request
+                    .Builder()
+                    .url(url)
+                    .build();
+            Response response = okHttpClient.newCall(request)
+                    .execute();
+            String data = response.body().string();
+            Gson gson = new Gson();
+            Wrapper wrapper = gson.fromJson(data, Wrapper.class);
+            item.onNext(wrapper);
+            item.onComplete();
+        });
     }
 }
