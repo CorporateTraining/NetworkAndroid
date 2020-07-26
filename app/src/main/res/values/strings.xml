@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">NetworkAndroid</string>
+    <string name="network_activity">NetworkActivity</string>
 </resources>
