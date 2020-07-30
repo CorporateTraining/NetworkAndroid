@@ -48,14 +48,18 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onNext(Wrapper wrapper) {
-                        if (wrapper.getData().size() > 0) {
-                            Toast.makeText(getApplicationContext(), wrapper.getData().get(0).getName(), Toast.LENGTH_SHORT).show();
+                        if (!disposable.isDisposed()) {
+                            if (wrapper.getData().size() > 0) {
+                                Toast.makeText(getApplicationContext(), wrapper.getData().get(0).getName(), Toast.LENGTH_SHORT).show();
+                            }
                         }
                     }
 
                     @Override
                     public void onError(Throwable e) {
-                        Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                        if (!disposable.isDisposed()) {
+                            Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
                     }
 
                     @Override
