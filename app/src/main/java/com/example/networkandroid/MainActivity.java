@@ -19,6 +19,7 @@ import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
     private Button networkButton;
+    private Disposable disposable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,16 +39,21 @@ public class MainActivity extends AppCompatActivity {
                 .subscribe(new Observer<String>() {
                     @Override
                     public void onSubscribe(Disposable d) {
+                        disposable = d;
                     }
 
                     @Override
                     public void onNext(String s) {
-                        Toast.makeText(getApplicationContext(), s, Toast.LENGTH_SHORT).show();
+                        if (!disposable.isDisposed()) {
+                            Toast.makeText(getApplicationContext(), s, Toast.LENGTH_SHORT).show();
+                        }
                     }
 
                     @Override
                     public void onError(Throwable e) {
-                        Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                        if (!disposable.isDisposed()) {
+                            Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
                     }
 
                     @Override
@@ -70,5 +76,13 @@ public class MainActivity extends AppCompatActivity {
             item.onNext(data);
             item.onComplete();
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (disposable != null && !disposable.isDisposed()) {
+            disposable.dispose();
+        }
+        super.onDestroy();
     }
 }
