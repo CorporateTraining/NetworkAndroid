@@ -7,6 +7,7 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.example.networkandroid.entity.Wrapper;
+import com.example.networkandroid.utils.GsonUtil;
 import com.google.gson.Gson;
 
 import io.reactivex.Observable;
@@ -22,6 +23,7 @@ import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
     private Button networkButton;
+    private Disposable disposable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
                 .subscribe(new Observer<Wrapper>() {
                     @Override
                     public void onSubscribe(Disposable d) {
+                        disposable = d;
                     }
 
                     @Override
@@ -72,10 +75,17 @@ public class MainActivity extends AppCompatActivity {
             Response response = okHttpClient.newCall(request)
                     .execute();
             String data = response.body().string();
-            Gson gson = new Gson();
-            Wrapper wrapper = gson.fromJson(data, Wrapper.class);
+            Wrapper wrapper = GsonUtil.fromToJson(data, Wrapper.class);
             item.onNext(wrapper);
             item.onComplete();
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (disposable != null && !disposable.isDisposed()) {
+            disposable.dispose();
+        }
+        super.onDestroy();
     }
 }
